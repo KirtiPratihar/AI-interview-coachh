@@ -1,0 +1,8 @@
+{
+  "name": "AI Interview Coach",
+  "description": "An AI-powered interview simulator that provides feedback on your answers, confidence, and body language using camera and microphone input.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

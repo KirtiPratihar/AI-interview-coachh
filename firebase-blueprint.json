@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "InterviewSession": {
+      "title": "Interview Session",
+      "description": "A completed interview session with feedback",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "topic": { "type": "string" },
+        "difficulty": { "type": "string" },
+        "score": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "feedbacks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "question": { "type": "string" },
+              "score": { "type": "number" },
+              "confidence": { "type": "string" },
+              "nervousness": { "type": "string" },
+              "strengths": { "type": "array", "items": { "type": "string" } },
+              "improvements": { "type": "array", "items": { "type": "string" } },
+              "overallSummary": { "type": "string" },
+              "answerCorrectness": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["userId", "topic", "difficulty", "score", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/sessions/{sessionId}": {
+      "schema": "InterviewSession",
+      "description": "Historical interview sessions"
+    }
+  }
+}

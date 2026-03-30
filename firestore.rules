@@ -1,0 +1,96 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required)
+    //   - displayName: string (optional)
+    //   - photoURL: string (optional)
+    //   - createdAt: timestamp (optional)
+    //   - role: string (optional, 'admin' | 'user')
+    //
+    // Collection: sessions
+    // Document ID: {sessionId}
+    // Fields:
+    //   - userId: string (required)
+    //   - topic: string (required)
+    //   - difficulty: string (required)
+    //   - score: number (required)
+    //   - timestamp: timestamp (required)
+    //   - feedbacks: list (required)
+    //     - question: string
+    //     - score: number
+    //     - confidence: string
+    //     - nervousness: string
+    //     - strengths: list<string>
+    //     - improvements: list<string>
+    //     - overallSummary: string
+    //     - answerCorrectness: string
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "kirtipratihar1@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUser(data) {
+      let allowedFields = ['uid', 'email', 'displayName', 'photoURL', 'createdAt', 'role'];
+      return data.keys().hasAll(['uid', 'email']) &&
+             data.keys().hasOnly(allowedFields) &&
+             data.uid == request.auth.uid &&
+             isValidEmail(data.email) &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() < 100)) &&
+             (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() < 500)) &&
+             (!('role' in data) || (data.role == 'user' || isAdmin())) &&
+             (!('createdAt' in data) || data.createdAt == request.time);
+    }
+
+    function isValidSession(data) {
+      let allowedFields = ['userId', 'topic', 'difficulty', 'score', 'timestamp', 'feedbacks'];
+      return data.keys().hasAll(['userId', 'topic', 'difficulty', 'score', 'timestamp', 'feedbacks']) &&
+             data.keys().hasOnly(allowedFields) &&
+             data.userId == request.auth.uid &&
+             data.topic is string && data.topic.size() < 100 &&
+             data.difficulty is string && data.difficulty.size() < 50 &&
+             data.score is number && data.score >= 0 && data.score <= 10 &&
+             data.feedbacks is list && data.feedbacks.size() <= 10 &&
+             data.timestamp == request.time;
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) && (request.resource.data.role == 'user' || isAdmin());
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    // Interview sessions
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidSession(request.resource.data);
+      allow update: if isOwner(resource.data.userId) && isValidSession(request.resource.data) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+  }
+}
