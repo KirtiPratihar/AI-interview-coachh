@@ -14,8 +14,7 @@ export interface InterviewFeedback {
   overallSummary: string;
   answerCorrectness: string;
 }
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || "" });
 
 export async function generateQuestions(difficulty: string, topic: string): Promise<InterviewQuestion[]> {
   const response = await ai.models.generateContent({
