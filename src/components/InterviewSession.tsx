@@ -125,54 +125,67 @@ const InterviewSession: React.FC = () => {
     if (snapshotIntervalRef.current) clearInterval(snapshotIntervalRef.current);
     
     setLoading(true);
-    const audioBase64 = await cameraRef.current?.stopRecording();
-    
-    if (audioBase64) {
-      try {
-        const feedback = await analyzeResponse(
-          questions[currentQuestionIndex].text,
-          audioBase64,
-          snapshots
-        );
-        const updatedFeedbacks = [...feedbacks, feedback];
-        setFeedbacks(updatedFeedbacks);
-        setAllSnapshots(prev => [...prev, snapshots]);
-        
-        if (currentQuestionIndex < questions.length - 1) {
-          const nextIdx = currentQuestionIndex + 1;
-          setCurrentQuestionIndex(nextIdx);
-          playQuestionVoice(questions[nextIdx].text);
-        } else {
-          // Final question done, save to Firebase
-          if (user) {
-            const avgScore = Math.round(updatedFeedbacks.reduce((acc, f) => acc + f.score, 0) / updatedFeedbacks.length);
-            await saveSession({
-              userId: user.uid,
-              topic: selectedTopic,
-              difficulty: selectedDifficulty,
-              score: avgScore,
-              feedbacks: updatedFeedbacks.map((f, i) => ({
-                ...f,
-                question: questions[i].text
-              }))
-            });
-          }
-          setState('feedback');
-        }
-      } catch (err) {
-        setError("Failed to analyze your response. Let's try the next question.");
-        if (currentQuestionIndex < questions.length - 1) {
-          const nextIdx = currentQuestionIndex + 1;
-          setCurrentQuestionIndex(nextIdx);
-          playQuestionVoice(questions[nextIdx].text);
-        } else {
-          setState('feedback');
-        }
-      }
-    }
-    setLoading(false);
-  };
+    setError(null); // Clear any previous errors
 
+    try {
+      const audioBase64 = await cameraRef.current?.stopRecording();
+      
+      if (!audioBase64) {
+        throw new Error("No audio recorded. Please try again.");
+      }
+
+      // 1. AI Analysis Call (Uses the stable gemini-1.5-flash we set up)
+      const feedback = await analyzeResponse(
+        questions[currentQuestionIndex].text,
+        audioBase64,
+        snapshots
+      );
+
+      // 2. Update local state
+      const updatedFeedbacks = [...feedbacks, feedback];
+      setFeedbacks(updatedFeedbacks);
+      setAllSnapshots(prev => [...prev, snapshots]);
+      
+      // 3. LOGIC TO MOVE FORWARD
+      if (currentQuestionIndex < questions.length - 1) {
+        // --- MOVE TO NEXT QUESTION ---
+        const nextIdx = currentQuestionIndex + 1;
+        setCurrentQuestionIndex(nextIdx);
+        playQuestionVoice(questions[nextIdx].text);
+      } else {
+        // --- FINISHED ALL QUESTIONS: Save to Firebase ---
+        if (user) {
+          const avgScore = Math.round(updatedFeedbacks.reduce((acc, f) => acc + f.score, 0) / updatedFeedbacks.length);
+          await saveSession({
+            userId: user.uid,
+            topic: selectedTopic,
+            difficulty: selectedDifficulty,
+            score: avgScore,
+            feedbacks: updatedFeedbacks.map((f, i) => ({
+              ...f,
+              question: questions[i].text
+            }))
+          });
+        }
+        setState('feedback');
+      }
+    } catch (err) {
+      console.error("Submission error:", err);
+      // Even if AI analysis fails, we force the app to the next question so user isn't stuck
+      setError("AI analysis timed out, moving to next question...");
+      
+      setTimeout(() => {
+        if (currentQuestionIndex < questions.length - 1) {
+          setCurrentQuestionIndex(prev => prev + 1);
+          setError(null);
+        } else {
+          setState('feedback');
+        }
+      }, 3000);
+    } finally {
+      setLoading(false);
+    }
+  };
   const resetInterview = () => {
     setState('welcome');
     setQuestions([]);

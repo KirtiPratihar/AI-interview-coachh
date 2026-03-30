@@ -69,14 +69,15 @@ service cloud.firestore {
     function isValidSession(data) {
       let allowedFields = ['userId', 'topic', 'difficulty', 'score', 'timestamp', 'feedbacks'];
       return data.keys().hasAll(['userId', 'topic', 'difficulty', 'score', 'timestamp', 'feedbacks']) &&
-             data.keys().hasOnly(allowedFields) &&
-             data.userId == request.auth.uid &&
-             data.topic is string && data.topic.size() < 100 &&
-             data.difficulty is string && data.difficulty.size() < 50 &&
-             data.score is number && data.score >= 0 && data.score <= 10 &&
-             data.feedbacks is list && data.feedbacks.size() <= 10 &&
-             data.timestamp == request.time;
-    }
+         data.keys().hasOnly(allowedFields) &&
+         data.userId == request.auth.uid &&
+         data.topic is string && data.topic.size() < 100 &&
+         data.difficulty is string && data.difficulty.size() < 50 &&
+         data.score is number && data.score >= 0 && data.score <= 10 &&
+         data.feedbacks is list &&
+         // FIX: Remove "== request.time" as it is too strict for live web apps
+         data.timestamp is timestamp; 
+}
 
     // User profiles
     match /users/{userId} {

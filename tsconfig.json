@@ -9,6 +9,7 @@
       "DOM",
       "DOM.Iterable"
     ],
+    "types": ["vite/client"], // <--- ADD THIS LINE HERE
     "skipLibCheck": true,
     "moduleResolution": "bundler",
     "isolatedModules": true,

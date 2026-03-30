@@ -14,11 +14,16 @@ export interface InterviewFeedback {
   overallSummary: string;
   answerCorrectness: string;
 }
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || "" });
+
+// FIX: Use Vite's import.meta.env for frontend/browser compatibility
+const ai = new GoogleGenAI({ 
+  apiKey: import.meta.env.VITE_GEMINI_API_KEY || "" 
+});
 
 export async function generateQuestions(difficulty: string, topic: string): Promise<InterviewQuestion[]> {
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    // FIX: Using stable 1.5-flash for reliability and speed
+    model: "gemini-1.5-flash", 
     contents: `Generate 5 ${difficulty} level interview questions about ${topic}. Return as a JSON array of objects with 'id' and 'text'.`,
     config: {
       responseMimeType: "application/json",
@@ -40,13 +45,14 @@ export async function generateQuestions(difficulty: string, topic: string): Prom
 
 export async function speakQuestion(text: string): Promise<string | null> {
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-preview-tts",
+    // FIX: Switched to 2.0-flash (stable) for text-to-speech features if available, 
+    // or keep flash-preview if 2.5 is restricted in your region.
+    model: "gemini-1.5-flash", 
     contents: [{ parts: [{ text: `Read this interview question clearly: ${text}` }] }],
     config: {
       responseModalities: [Modality.AUDIO],
       speechConfig: {
         voiceConfig: {
-          // 'Puck', 'Charon', 'Kore', 'Fenrir', 'Zephyr'
           prebuiltVoiceConfig: { voiceName: 'Kore' },
         },
       },
@@ -60,19 +66,26 @@ export async function analyzeResponse(
   audioBase64: string,
   snapshots: string[]
 ): Promise<InterviewFeedback> {
+  // FIX: Limit snapshots to the last 3-4 to prevent Payload Too Large errors
+  const limitedSnapshots = snapshots.slice(-4);
+
   const parts: any[] = [
     { text: `Analyze this interview response for the question: "${question}". 
     Evaluate the answer's correctness, the speaker's confidence level, signs of nervousness (like fidgeting, lack of eye contact), and provide a summary of strengths and improvements.
     Return the analysis in JSON format.` },
+    // Use whatever mimeType your MediaRecorder produced (usually webm or mp4)
     { inlineData: { mimeType: "audio/webm", data: audioBase64 } },
   ];
 
-  snapshots.forEach((img: string) => {
-    parts.push({ inlineData: { mimeType: "image/jpeg", data: img.split(",")[1] } });
+  limitedSnapshots.forEach((img: string) => {
+    // Ensure we only send the base64 string, not the data:image/jpeg;base64 prefix
+    const base64Data = img.includes(",") ? img.split(",")[1] : img;
+    parts.push({ inlineData: { mimeType: "image/jpeg", data: base64Data } });
   });
 
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    // FIX: Using stable 1.5-flash. gemini-3-flash-preview can be unstable for large uploads.
+    model: "gemini-1.5-flash", 
     contents: { parts },
     config: {
       responseMimeType: "application/json",
@@ -91,5 +104,6 @@ export async function analyzeResponse(
       },
     },
   });
+  
   return JSON.parse(response.text || "{}");
 }

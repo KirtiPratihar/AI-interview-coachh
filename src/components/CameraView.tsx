@@ -32,31 +32,30 @@ const CameraView = forwardRef<CameraViewHandle, { isRecording: boolean }>((props
   }, []);
 
   useImperativeHandle(ref, () => ({
+    // 1. FIX: Image Compression (Payload Size)
     takeSnapshot: () => {
       if (!videoRef.current) return null;
       const canvas = document.createElement('canvas');
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
+      // Set fixed resolution to 640x480 to keep image size small
+      canvas.width = 640;
+      canvas.height = 480;
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.drawImage(videoRef.current, 0, 0);
-        return canvas.toDataURL('image/jpeg', 0.8);
+        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        // Lower quality to 0.7 (70%) for faster upload
+        return canvas.toDataURL('image/jpeg', 0.7); 
       }
       return null;
     },
+
+    // 2. FIX: MediaRecorder Compatibility (Cross-browser support)
     startRecording: () => {
       if (!videoRef.current?.srcObject) return;
       const stream = videoRef.current.srcObject as MediaStream;
       
-      // Try to find a supported mime type
-      const mimeTypes = ['audio/webm', 'audio/mp4', 'audio/ogg', 'audio/wav'];
-      let selectedMimeType = '';
-      for (const type of mimeTypes) {
-        if (MediaRecorder.isTypeSupported(type)) {
-          selectedMimeType = type;
-          break;
-        }
-      }
+      // Create a list of types to try (WebM for Chrome/FF, MP4 for Safari)
+      const mimeTypes = ['video/webm;codecs=vp8,opus', 'video/mp4', 'audio/webm', 'audio/mp4'];
+      const selectedMimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type));
 
       try {
         mediaRecorderRef.current = new MediaRecorder(stream, selectedMimeType ? { mimeType: selectedMimeType } : undefined);
@@ -69,6 +68,7 @@ const CameraView = forwardRef<CameraViewHandle, { isRecording: boolean }>((props
         console.error("Error starting MediaRecorder:", err);
       }
     },
+
     stopRecording: () => {
       return new Promise((resolve) => {
         if (!mediaRecorderRef.current) {
@@ -76,7 +76,8 @@ const CameraView = forwardRef<CameraViewHandle, { isRecording: boolean }>((props
           return;
         }
         mediaRecorderRef.current.onstop = async () => {
-          const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+          // Use the actual MIME type of the recorded blob
+          const blob = new Blob(chunksRef.current, { type: mediaRecorderRef.current?.mimeType || 'audio/webm' });
           const reader = new FileReader();
           reader.onloadend = () => {
             const base64 = (reader.result as string).split(',')[1];
