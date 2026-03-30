@@ -20,8 +20,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
-// Use the projectId from env for the DB initialization
-export const db = getFirestore(app); 
+// Use the projectId from env for the DB initialization 
+export const db = getFirestore(app, 'ai-studio-3f06b66b-7168-4167-87bd-3d8148ff154d');
 export const googleProvider = new GoogleAuthProvider();
 
 export const loginWithGoogle = () => signInWithPopup(auth, googleProvider);
