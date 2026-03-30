@@ -1,9 +1,13 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, getDocFromServer, doc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
 
-// FIX: No more importing from the leaked .json file
-// We now use Vite's import.meta.env
+// --- DIAGNOSTIC LOG: This will tell us if Vercel is working ---
+console.log(
+  "Checking Keys -> Firebase API Key exists:", !!import.meta.env.VITE_FIREBASE_API_KEY, 
+  "| Gemini API Key exists:", !!import.meta.env.VITE_GEMINI_API_KEY
+);
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -22,8 +26,6 @@ export const googleProvider = new GoogleAuthProvider();
 
 export const loginWithGoogle = () => signInWithPopup(auth, googleProvider);
 export const logout = () => signOut(auth);
-
-// --- Rest of your code (OperationType, handleFirestoreError, etc.) remains exactly the same ---
 
 export enum OperationType {
   CREATE = 'create',
