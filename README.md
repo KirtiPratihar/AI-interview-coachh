@@ -18,7 +18,7 @@ This project demonstrates how modern web technologies and AI techniques can be u
 
 # Demo
 ```
-Live Demo: 
+Live Demo: https://ai-interview-coachh-9qns.vercel.app/ 
 ```
 
 ---
@@ -233,14 +233,17 @@ firebase deploy
 # Screenshots
 
 ## Home Page
+https://github.com/KirtiPratihar/AI-interview-coachh/blob/main/Screenshots/Screenshot%202026-03-31%20184235.png
+https://github.com/KirtiPratihar/AI-interview-coachh/blob/main/Screenshots/Screenshot%202026-03-31%20184310.png
 
-
+## Configure your session
+https://github.com/KirtiPratihar/AI-interview-coachh/blob/main/Screenshots/Screenshot%202026-03-31%20184324.png
 
 ## Interview Session
-
+https://github.com/KirtiPratihar/AI-interview-coachh/blob/main/Screenshots/Screenshot%202026-03-31%20184446.png
 
 ## Feedback Dashboard
-
+https://github.com/KirtiPratihar/AI-interview-coachh/blob/main/Screenshots/Screenshot%202026-03-31%20184733.png
 
 ---
 
