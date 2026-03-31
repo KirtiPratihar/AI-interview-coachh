@@ -229,21 +229,20 @@ firebase deploy
 6. Feedback and performance score are displayed.
 
 ---
+## Screenshots
 
-# Screenshots
+### Home Page
+![Home Page 1](https://github.com/KirtiPratihar/AI-interview-coachh/blob/main/Screenshots/Screenshot%202026-03-31%20184235.png?raw=true)
+![Home Page 2](https://github.com/KirtiPratihar/AI-interview-coachh/blob/main/Screenshots/Screenshot%202026-03-31%20184310.png?raw=true)
 
-## Home Page
-https://github.com/KirtiPratihar/AI-interview-coachh/blob/main/Screenshots/Screenshot%202026-03-31%20184235.png
-https://github.com/KirtiPratihar/AI-interview-coachh/blob/main/Screenshots/Screenshot%202026-03-31%20184310.png
+### Configure your session
+![Configure Session](https://github.com/KirtiPratihar/AI-interview-coachh/blob/main/Screenshots/Screenshot%202026-03-31%20184324.png?raw=true)
 
-## Configure your session
-https://github.com/KirtiPratihar/AI-interview-coachh/blob/main/Screenshots/Screenshot%202026-03-31%20184324.png
+### Interview Session
+![Interview Session](https://github.com/KirtiPratihar/AI-interview-coachh/blob/main/Screenshots/Screenshot%202026-03-31%20184446.png?raw=true)
 
-## Interview Session
-https://github.com/KirtiPratihar/AI-interview-coachh/blob/main/Screenshots/Screenshot%202026-03-31%20184446.png
-
-## Feedback Dashboard
-https://github.com/KirtiPratihar/AI-interview-coachh/blob/main/Screenshots/Screenshot%202026-03-31%20184733.png
+### Feedback Dashboard
+![Feedback Dashboard](https://github.com/KirtiPratihar/AI-interview-coachh/blob/main/Screenshots/Screenshot%202026-03-31%20184733.png?raw=true)
 
 ---
 
