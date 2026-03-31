@@ -190,7 +190,7 @@ npm run dev
 The application will run at:
 
 ```
-https://ai-interview-coachh-9qns.vercel.app/
+http://localhost:5173
 ```
 
 ---
